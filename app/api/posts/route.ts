@@ -7,7 +7,7 @@ export type PostsIndexResponse = {
     id: number
     title: string
     content: string
-    thumbnailUrl: string
+    thumbnailImageKey: string | null
     createdAt: Date
     updatedAt: Date
     postCategories: {

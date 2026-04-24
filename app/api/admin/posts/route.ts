@@ -1,14 +1,15 @@
 // 記事一覧API(管理者)
 import { request } from 'http'
 import { prisma } from '../../../_libs/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
+import { supabase } from '@/_libs/supabase'
 
 export type PostIndexResponse = {
   posts: {
     id: number
     title: string
     content: string
-    thumbnailUrl: string
+    thumbnailImageKey: string
     createdAt: Date
     updatedAt: Date
     postCategories: {
@@ -20,7 +21,17 @@ export type PostIndexResponse = {
   }[]
 }
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
+
+  const authHeader = request.headers.get('Authorization') ?? ''
+  const token = authHeader.replace('Bearer ', '')
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if(error) {
+    return NextResponse.json({ status: error.message }, { status: 400 })
+  }
+
   try {
     const posts = await prisma.post.findMany({
       include: {
@@ -43,7 +54,7 @@ export const GET = async () => {
     return NextResponse.json({ posts }, { status: 200 })
   } catch (error) {
     if ( error instanceof Error)
-      return NextResponse.json({ massage: error.message}, { status: 400})
+      return NextResponse.json({ message: error.message}, { status: 400})
   }
 }
 
@@ -53,7 +64,7 @@ export type CreatePostRequestBody = {
   title: string
   content: string
   categories: { id: number }[]
-  thumbnailUrl: string
+  thumbnailImageKey: string
 }
 
 // レスポンス（返す型）
@@ -65,13 +76,13 @@ export const POST = async (request: Request) => {
   try {
     const body: CreatePostRequestBody = await request.json()
 
-    const { title, content, categories, thumbnailUrl } = body
+    const { title, content, categories, thumbnailImageKey } = body
 
     const data = await prisma.post.create({
       data: {
         title,
         content,
-        thumbnailUrl
+        thumbnailImageKey
       },
     })
 

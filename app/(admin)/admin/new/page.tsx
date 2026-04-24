@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { CreatePostRequestBody } from "@/api/admin/posts/route";
 import { PostForm } from '../posts/_components/PostForm'
 import { Category } from "@/api/admin/posts/[id]/route"
+import { supabase } from "@/_libs/supabase";
 
 export default function CreatePage() {
   const router = useRouter()
@@ -19,17 +20,25 @@ export default function CreatePage() {
   const handleSubmit = async (e: { preventDefault: () => void }) => {
     e.preventDefault()
 
+    setLoading(false)
+
     const body: CreatePostRequestBody = {
       title,
       content,
-      thumbnailUrl,
-      categories: [],
+      thumbnailImageKey: thumbnailUrl,
+      categories,
     }
+
+    const { data: { session }} = await supabase.auth.getSession()
+    const token = session?.access_token
 
     try {
       const res = await fetch('/api/admin/posts', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`  
+        },
         body: JSON.stringify(body)
       })
         router.push('/admin/')

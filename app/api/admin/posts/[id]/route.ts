@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { PostType } from '@/_types/post'
 
 export type Category = {
-  id: string
+  id: number
   name: string
 }
 
@@ -54,7 +54,7 @@ export type UpdatePostRequestBody =  {
   title: string
   content: string
   categories: { id: number }[]
-  thumbnailUrl : string
+  thumbnailImageKey : string
 }
 
 export const PUT = async (
@@ -63,7 +63,7 @@ export const PUT = async (
 ) => {
   const { id } = await params
 
-  const { title, content, categories, thumbnailUrl }: UpdatePostRequestBody = await request.json()
+  const { title, content, categories, thumbnailImageKey }: UpdatePostRequestBody = await request.json()
 
   try {
     const post = await prisma.post.update({
@@ -73,7 +73,7 @@ export const PUT = async (
       data: {
         title,
         content,
-        thumbnailUrl,
+        thumbnailImageKey,
       },
     })
 

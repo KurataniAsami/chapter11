@@ -31,7 +31,7 @@ export default function Home() {
             href={`/posts/${post.id}`}
           >
             <div className='flex justify-between mx-4 my-4'>
-              <div>{post.createdAt}</div>
+              <div>{post.createdAt.toLocaleString()}</div>
               {post.postCategories.map((postCategory) => (
                 <span key={postCategory.category.id}>{postCategory.category.name}</span>
               ))}

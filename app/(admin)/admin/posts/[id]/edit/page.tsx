@@ -6,6 +6,7 @@ import { PostType } from '@/_types/post'
 import { UpdatePostRequestBody } from '@/api/admin/posts/[id]/route'
 import { PostForm } from '../../_components/PostForm'
 import { Category } from "@/api/admin/posts/[id]/route"
+import { supabase } from '@/_libs/supabase'
 
 export default function EditPostPage() {
   const { id } = useParams<{ id: string }>()
@@ -21,8 +22,16 @@ export default function EditPostPage() {
   //  フォームの情報を取得
   useEffect(() => {
     const fetchPost = async () => {
+
+      const { data: { session }} = await supabase.auth.getSession()
+      const token = session?.access_token
+
       try {
-        const res = await fetch(`/api/admin/posts/${id}`)
+        const res = await fetch(`/api/admin/posts/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
         const data = await res.json()
         const post = data.post
         setContent(post.content)
@@ -42,17 +51,21 @@ export default function EditPostPage() {
     const body: UpdatePostRequestBody = {
       title,
       content,
-      thumbnailUrl,
+      thumbnailImageKey: thumbnailUrl,
       categories: categories.map((category) => ({
         id: Number(category.id),
       })),
     }
+
+    const { data: { session }} = await supabase.auth.getSession()
+    const token = session?.access_token
 
     try {
     const res = await fetch(`/api/admin/posts/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
       },
       body: JSON.stringify(body),
     })

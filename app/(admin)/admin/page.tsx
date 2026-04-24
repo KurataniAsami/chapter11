@@ -3,21 +3,36 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { PostsIndexResponse } from '@/api/posts/route'
+import { useSupabaseSession } from '@/_hooks/useSupabaseSession';
 
 export default function Home() {
   const [posts, setPosts] = useState<PostsIndexResponse["posts"]>([])
   const [loading, setLoading] = useState(true)
 
+  const { token } = useSupabaseSession()
+
   useEffect(() => {
-    const getAllPosts = async () => {
-      const res = await fetch('/api/admin/posts')
+    console.log("token状態:", token)
+    if(!token) {
+      setLoading(false)  // 追加
+      return
+    } 
+
+    const fetcher = async () => {
+      const res = await fetch('/api/admin/posts', {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      })
+      // const { posts } = await res.json()
       const data = await res.json()
-      setPosts(data.posts)
+      setPosts(data.posts ?? [])
       setLoading(false)
     }
 
-    getAllPosts()
-  }, [])
+    fetcher()
+  }, [token])
 
   if (loading) return <p>loading</p>
   if (posts.length === 0) return <p>記事が見つかりません</p>
@@ -41,7 +56,7 @@ export default function Home() {
             href={`/admin/posts/${post.id}`}
           >
             <div className='flex justify-between mx-4 my-4'>
-              <div>{post.createdAt}</div>
+              <div>{post.createdAt.toString()}</div>
               {post.postCategories.map((postCategory) => (
                 <span key={postCategory.category.id}>{postCategory.category.name}</span>
               ))}

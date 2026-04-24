@@ -6,6 +6,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { UpdateCategoryRequestBody } from "@/api/admin/categories/[id]/route"
 import { CategoryForm } from '../../_components/CategoryForm'
+import { supabase } from "@/_libs/supabase"
 
 export default function EditCategoryPage() {
   const { id } = useParams<{ id : string}>()
@@ -17,8 +18,16 @@ export default function EditCategoryPage() {
   // 既存カテゴリデータ取得
   useEffect(() => {
   const fetchCategory = async () => {
+
+      const { data: { session }} = await supabase.auth.getSession()
+      const token = session?.access_token
+
       try {
-        const res = await fetch(`/api/admin/categories/${id}`)  
+        const res = await fetch(`/api/admin/categories/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })  
         const data = await res.json()   
         setCategory(data.name)  
       } catch (err) {

@@ -1,6 +1,10 @@
 // 共通コンポーネント（新規作成のコードと記事編集コードの重複部分をまとめた物）
 'use client'
 import { Category } from "@/api/admin/posts/[id]/route"
+import { ChangeEvent, useEffect, useState } from "react"
+import { v4 as uuidv4 } from 'uuid'
+import { supabase } from '@/_libs/supabase'
+import Image from "next/image"
 
 type CategoryProps = {
   title: string
@@ -29,6 +33,55 @@ export const PostForm: React.FC<CategoryProps> = ({
   disabled,
   mode,
 }) => {
+
+  // 画像アップロード処理
+  const [thumbnailImageKey, setThumbnailImageKey] = useState('')
+  // アップロードした画像を表示する
+  const [thumbnailImageUrl, setThumbnailImageUrl] = useState<null | string>(
+    null,
+  )
+
+  const handleImageChange = async (
+  event: ChangeEvent<HTMLInputElement>,
+): Promise<void> => {
+  if(!event.target.files || event.target.files.length == 0) {
+    return
+  }
+
+  const file = event.target.files[0]  
+  const filePath = `private/${uuidv4()}`  
+
+  const { data, error } = await supabase.storage
+    .from('post_thumbnail')   
+    .upload(filePath, file, {
+      cacheControl: '3600',
+      upsert: false,
+    })
+
+  if(error) {
+    alert(error.message)
+    return
+  } 
+
+  setThumbnailImageKey(data.path)
+}
+
+  useEffect(() => {
+    if(!thumbnailImageKey) return
+
+    const fetcher = async () => {
+      const {
+        data: { publicUrl },
+      } = await supabase.storage
+      .from('post_thumbnail')
+      .getPublicUrl(thumbnailImageKey)
+
+      setThumbnailUrl(publicUrl)
+    } 
+
+    fetcher()
+  },[thumbnailImageKey])
+
   return (
     <form onSubmit={onSubmit} className="space-y-4">
 
@@ -53,6 +106,16 @@ export const PostForm: React.FC<CategoryProps> = ({
       </div>
 
       <div>
+        <label
+          htmlFor="thumbnailImageKey"
+          className="block text-sm font-medium text-gray-700"
+        >
+          サムネイルURL
+        </label>
+        <input type="file" id="thumbnailImageKey" onChange={handleImageChange} accept="image/*" />
+      </div>
+
+      <div>
         <label>画像</label>
         <input
           value={thumbnailUrl}
@@ -61,6 +124,18 @@ export const PostForm: React.FC<CategoryProps> = ({
           disabled={disabled}
         />
       </div>
+
+      {/* 画像プレビュー */}
+      {thumbnailImageUrl && (
+        <div className="mt-2">
+          <Image
+            src={thumbnailImageUrl}
+            alt={"thumbnail"}
+            width={400}
+            height={400}
+          />
+        </div>
+      )}
       
       <button
         type="submit"

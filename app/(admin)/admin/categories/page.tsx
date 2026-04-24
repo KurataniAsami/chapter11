@@ -3,16 +3,26 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { CategryIndexResponse } from '@/api/admin/categories/route'
+import { supabase } from '@/_libs/supabase'
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<CategryIndexResponse[]>([])
+  const [categories, setCategories] = useState<CategryIndexResponse["categories"]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     const fetchCategories = async () => {
+
+      const { data: { session }} = await supabase.auth.getSession()
+      const token = session?.access_token
+      
       try {
-        const res = await fetch('/api/admin/categories')
+        const res = await fetch('/api/admin/categories', {
+          headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`  
+        },
+        })
         const data = await res.json()
         setCategories(data.categories)
       } catch (err) {

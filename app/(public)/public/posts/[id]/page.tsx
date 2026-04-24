@@ -11,7 +11,6 @@ const PostDetail = () => {
   const [post, setPost] = useState<PostShowResponse["post"] | null>(null);
   const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
-  console.log("現在のID:", id); // これがブラウザのコンソールに出るか？
   const [error, setError] = useState(false);
 
   useEffect(() => {
@@ -38,9 +37,9 @@ const PostDetail = () => {
   
   return (
     <div className='w-[800px] mx-auto'>
-      {post.thumbnailUrl && (
+      {post.thumbnailImageKey && (
         <Image
-          src={post.thumbnailUrl}
+          src={post.thumbnailImageKey}
           width={800}
           height={400}
           alt={post.title}
@@ -48,7 +47,7 @@ const PostDetail = () => {
       )}
 
       <div className='flex justify-between mx-5 items-center my-3'>
-        {/* <div>{post.createdAt}</div> */}
+        <div>{post.createdAt.toLocaleString()}</div>
         <div className='border-2 border-blue-500 rounded px-2 py-1 text-blue-500 inline-block'>
           {post.postCategories.map((postCategory) => (
             <span key={postCategory.category.id}>

@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { CreateCategoryRequestBody } from '@/api/admin/categories/route'
 import { CategoryForm } from '../_components/CategoryForm'
+import { supabase } from '@/_libs/supabase'
 
 export default function CreateCategoryPage() {
   const router = useRouter()
@@ -21,10 +22,16 @@ export default function CreateCategoryPage() {
       name: category
     }
 
+    const { data: { session }} = await supabase.auth.getSession()
+    const token = session?.access_token
+
     try {
       const res = await fetch('/api/admin/categories', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
         body: JSON.stringify(body),
       })
 

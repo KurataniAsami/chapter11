@@ -3,9 +3,10 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Image from 'next/image'
-import { PostType } from '@/_types/post'
+// import { PostType } from '@/_types/post'  // バックエンドの型を使用しているので未使用
 import { PostShowResponse } from '../../../../api/admin/posts/[id]/route';
 import Link from 'next/link';
+import { supabase } from '@/_libs/supabase';
 
 const PostDetail = () => {
   const [post, setPost] = useState<PostShowResponse["post"] | null>(null);
@@ -15,9 +16,18 @@ const PostDetail = () => {
 
   useEffect(() => {
     const getPost = async () => {
+      
+      const { data: { session }} = await supabase.auth.getSession()
+      const token = session?.access_token
+      
       try {
-        const response = await fetch(`/api/admin/posts/${id}`)
+        const response = await fetch(`/api/admin/posts/${id}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
         const data = await response.json()
+
         setPost(data.post)
       } catch {
         setError(true)
@@ -34,9 +44,9 @@ const PostDetail = () => {
   
   return (
     <div className='w-[800px] mx-auto'>
-      {post.thumbnailUrl && (
+      {post.thumbnailImageKey && (
         <Image
-          src={post.thumbnailUrl}
+          src={post.thumbnailImageKey}
           width={800}
           height={400}
           alt={post.title}
