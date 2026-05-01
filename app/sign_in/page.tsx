@@ -1,23 +1,36 @@
 'use client'
 
 import { supabase } from '@/_libs/supabase'
+import { validationSchema } from '@/_libs/validationSchema'
+import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
+import { useForm } from "react-hook-form"
+
+type LoginFormData = {
+  email: string
+  password: string
+}
 
 export default function Page() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
-  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault()
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<LoginFormData>({
+    mode: "onChange",
+    resolver: zodResolver(validationSchema)
+  })
 
+  const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true)
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    const { error } = await supabase.auth.signInWithPassword({
+      email: data.email,
+      password: data.password,
     })
 
     if (error) {
@@ -30,7 +43,7 @@ export default function Page() {
 
   return (
     <div className="flex justify-center pt-60">
-      <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-100">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 w-full max-w-100">
         <div>
           <label
             htmlFor="email"
@@ -40,15 +53,15 @@ export default function Page() {
           </label>
           <input
             type="email"
-            name="email"
             id="email"
+            {...register("email")}
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
             placeholder="name@company.com"
-            required
-            onChange={(e) => setEmail(e.target.value)}
             disabled={isLoading}
           />
         </div>
+        <p>{errors.email?.message}</p>
+
         <div>
           <label
             htmlFor="password"
@@ -58,14 +71,13 @@ export default function Page() {
           </label>
           <input
             type="password"
-            name="password"
             id="password"
-            placeholder="••••••••"
+            placeholder="パスワードを入力してください"
+            {...register("password")}
             className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
-            required
-            onChange={(e) => setPassword(e.target.value)}
             disabled={isLoading}
           />
+          <p>{errors.password?.message}</p>
         </div>
 
         <div>

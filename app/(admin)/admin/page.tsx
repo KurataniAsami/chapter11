@@ -1,42 +1,36 @@
 // 一覧（管理者）
 'use client'
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { PostsIndexResponse } from '@/api/posts/route'
 import { useSupabaseSession } from '@/_hooks/useSupabaseSession';
+import useSWR from 'swr'
+
+const fetcher = async ([url, token]: [string, string]
+):Promise<PostsIndexResponse> => {
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  return res.json()
+} 
 
 export default function Home() {
-  const [posts, setPosts] = useState<PostsIndexResponse["posts"]>([])
-  const [loading, setLoading] = useState(true)
-
   const { token } = useSupabaseSession()
 
-  useEffect(() => {
-    console.log("token状態:", token)
-    if(!token) {
-      setLoading(false)  // 追加
-      return
-    } 
-
-    const fetcher = async () => {
-      const res = await fetch('/api/admin/posts', {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      })
-      // const { posts } = await res.json()
-      const data = await res.json()
-      setPosts(data.posts ?? [])
-      setLoading(false)
-    }
-
-    fetcher()
-  }, [token])
-
-  if (loading) return <p>loading</p>
-  if (posts.length === 0) return <p>記事が見つかりません</p>
-
+  // SWR
+  const { data, error, isLoading } = useSWR<PostsIndexResponse>(token ? [`/api/admin/posts`, token]: null,
+    fetcher
+  )
+  
+  if (isLoading) return <div>Loading...</div>
+  if(error) return <p>記事の取得に失敗しました</p>
+  if(!data || !data.posts) {
+    return <p>記事が見つかりません</p>
+  }
+  console.log(data)
+  
   return (
     <div>
       <div className='flex justify-between'>
@@ -48,7 +42,7 @@ export default function Home() {
         </Link>
       </div>
     <ul>
-      {posts.map((post) => (
+      {data.posts.map((post) => (
         <li key={post.id}
           className='border border-gray-300 max-w-3xl mx-auto my-5'
         >

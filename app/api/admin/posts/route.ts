@@ -23,9 +23,9 @@ export type PostIndexResponse = {
 
 export const GET = async (request: NextRequest) => {
 
-  const authHeader = request.headers.get('Authorization') ?? ''
-  const token = authHeader.replace('Bearer ', '')
-
+  // const token = request.headers.get('Authorization') ?? ''
+  const rawToken = request.headers.get('Authorization') ?? ''
+  const token = rawToken.replace('Bearer ', '')
   const { error } = await supabase.auth.getUser(token)
 
   if(error) {
@@ -101,7 +101,7 @@ export const POST = async (request: Request) => {
     })
   } catch (error) {
     if (error instanceof Error) {
-      return NextResponse.json({ message: error.message}, {status: 400})
+      return NextResponse.json({ message: error.message}, {status: 401})
     }
   }
 }

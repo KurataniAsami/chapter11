@@ -1,41 +1,39 @@
 // カテゴリー詳細ページ（管理者）
 'use client'
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import Image from 'next/image'
 import Link from 'next/link';
 import { CategoryShowResponse } from '@/api/admin/categories/[id]/route';
+import useSWR from 'swr';
+import { useSupabaseSession } from '@/_hooks/useSupabaseSession';
+
+const fetcher = async ([url, token]: [string, string]
+):Promise<CategoryShowResponse> => {
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  return res.json()
+}
 
 const CategoryDetail = () => {
-  const [category, setCategory] = useState<CategoryShowResponse | null>(null);
-  const [loading, setLoading] = useState(true);
   const { id } = useParams<{ id: string }>();
-  const [error, setError] = useState(false);
 
-  useEffect(() => {
-    const getCategory = async () => {
-      try {
-        const response = await fetch(`/api/admin/categories/${id}`)
-        const data = await response.json()
-        setCategory(data.category)
-      } catch {
-        setError(true)
-      } finally {
-        setLoading(false)
-      }
-    }
+  const { token } = useSupabaseSession()
+  
+  const { data, error, isLoading} = useSWR<CategoryShowResponse>(token ? [`/api/admin/categories/${id}`]: null,
+    fetcher
+  )
 
-    if (id) getCategory()
-  }, [id])
-
-  if (loading) return <p>loading</p>
-  if (error || !category)  return <p>記事が見つかりません</p>
+  if(isLoading || !data) return <div>Loading...</div>
+  if (error)  return <p>カテゴリーの取得に失敗しました</p>
   
   return (
     <div className='w-[800px] mx-auto'>
 
       <Link
-        href={`/admin/categories/${category.category.id}/edit`}
+        href={`/admin/categories/${data.category.id}/edit`}
         className="bg-black text-white px-4 py-2 rounded mr-3"
       >
         編集

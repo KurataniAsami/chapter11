@@ -1,29 +1,24 @@
 'use client'
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { PostType } from './_types/post'
+import useSWR from 'swr'
+
+type Posts = {
+  posts: PostType[]
+}
+
+const fetcher = (url:string) => fetch(url).then(res => res.json())
 
 export default function Home() {
-  const [posts, setPosts] = useState<PostType[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data, error, isLoading } = useSWR<Posts>('/api/posts', fetcher)
 
-  useEffect(() => {
-    const getAllPosts = async () => {
-      const res = await fetch('/api/posts')  // ここでroute.tsのGETリクエストをよぶ
-      const data = await res.json()
-      setPosts(data.posts)
-      setLoading(false)
-    }
-
-    getAllPosts()
-  }, [])
-
-  if (loading) return <p>loading</p>
-  if (posts.length === 0) return <p>記事が見つかりません</p>
+  if (isLoading || !data) return <p>loading</p>
+  if(error) return <p>記事の取得に失敗しました</p>
+  if (data.posts.length === 0) return <p>記事が見つかりません</p>
 
   return (
     <ul>
-      {posts.map((post) => (
+      {data.posts.map((post) => (
         <li key={post.id}
           className='border border-gray-300 max-w-3xl mx-auto my-5'
         >
