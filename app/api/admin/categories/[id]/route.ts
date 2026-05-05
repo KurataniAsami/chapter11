@@ -1,3 +1,4 @@
+import { supabase } from '@/_libs/supabase'
 import { prisma } from '../../../../_libs/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -15,6 +16,14 @@ export const GET = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
+  const  token = request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
+
+  if(error) {
+    return NextResponse.json({ status: error.message }, { status: 401 })
+  }
+
   const { id } = await params
 
   try {
@@ -45,8 +54,11 @@ export type UpdateCategoryRequestBody = {
 
 export const PUT = async (
   request : NextRequest,
-  { params }: { params: Promise<{ id: string}> },
+  { params }: { params: { id: string} },
 ) => {
+  const token = request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
   const { id } = await params
   const { name }: UpdateCategoryRequestBody = await request.json()
   try {

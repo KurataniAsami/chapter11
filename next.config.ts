@@ -7,6 +7,11 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'placehold.jp',
       },
+      // rmjosghmcwpjirsmxyhxはsupabaseのプロジェクトid
+      {
+        protocol: 'https',
+        hostname: 'rmjosghmcwpjirsmxyhx.supabase.co',
+      },
     ],
   },
 };

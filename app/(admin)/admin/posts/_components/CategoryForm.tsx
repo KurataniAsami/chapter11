@@ -1,8 +1,5 @@
 'use client'
 
-import { UpdateCategoryRequestBody } from "@/api/admin/categories/[id]/route"
-import { CreateCategoryRequestBody } from "@/api/admin/categories/route"
-
 type CategoryFormProps = {
   category: string  
   setCategory: (value: string) => void

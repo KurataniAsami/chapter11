@@ -1,6 +1,7 @@
 // カテゴリー 一覧API
+import { supabase } from '@/_libs/supabase'
 import { prisma } from '../../../_libs/prisma'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export type CategryIndexResponse = {
   categories: {
@@ -11,7 +12,11 @@ export type CategryIndexResponse = {
   }[]
 }
 
-export const GET = async () => {
+export const GET = async (request: NextRequest) => {
+
+  const token = request.headers.get('Authorization') ?? ''
+
+  const { error } = await supabase.auth.getUser(token)
   try {
     const categories = await prisma.category.findMany({
       orderBy: {
@@ -36,6 +41,9 @@ export type CreateCategoryResponse = {
 }
 
 export const POST = async (request: Request) => {
+
+  const token = request.headers.get('Authorization') ?? ''
+  const { error } = await supabase.auth.getUser(token)
   try {
     const body = await request.json()
 

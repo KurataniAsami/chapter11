@@ -1,29 +1,30 @@
 'use client'
 
-import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { CategryIndexResponse } from '@/api/admin/categories/route'
+import { useSupabaseSession } from '@/_hooks/useSupabaseSession'
+import useSWR from 'swr'
+
+const fetcher = async ([url, token]: [string, string]
+):Promise<CategryIndexResponse> => {
+  const res = await fetch(url, {
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  })
+  return res.json()
+}
 
 export default function CategoriesPage() {
-  const [categories, setCategories] = useState<CategryIndexResponse[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const { token } = useSupabaseSession()
 
-  useEffect(() => {
-    const fetchCategories = async () => {
-      try {
-        const res = await fetch('/api/admin/categories')
-        const data = await res.json()
-        setCategories(data.categories)
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "サーバーからの応答がありませんでした");
-      } finally {
-        setLoading(false)
-      }
-    }
+  const { data, error, isLoading } = useSWR<CategryIndexResponse>(token ? [`/api/admin/categories`, token]: null,
+    fetcher
+  )
 
-    fetchCategories()
-  }, [])
+  if(isLoading || !data) return <div>Loading</div>
+  if(error) return <p>カテゴリーの取得に失敗しました</p>
 
   return (
     <div className="max-w-4xl mx-auto">
@@ -37,7 +38,7 @@ export default function CategoriesPage() {
       </div>
       <div>
         <div className='flex flex-col'>
-          {categories.map((category) => (
+          {data.categories.map((category) => (
             <Link
               href={`/admin/categories/edit/${category.id}`}
               key={category.id} className="hover:bg-gray-200"

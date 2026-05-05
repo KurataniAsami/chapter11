@@ -1,4 +1,5 @@
 'use client'
+import { supabase } from '@/_libs/supabase'
 import { useRouter, useParams } from 'next/navigation'
 
 export default function DeletePostPage() {
@@ -7,9 +8,15 @@ export default function DeletePostPage() {
 
   const handleDelete = async () => {
 
+    const { data: { session }} = await supabase.auth.getSession()
+    const token = session?.access_token
+
     try {
       const res = await fetch(`/api/admin/categories/${id}`, {
         method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
       })
       const data = await res.json()
       console.log(data)

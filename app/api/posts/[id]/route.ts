@@ -7,7 +7,7 @@ export type PostShowResponse = {
     id: number
     title: string
     content: string
-    thumbnailUrl: string
+    thumbnailImageKey: string | null
     createdAt: Date
     updatedAt: Date
     postCategories: {
@@ -23,6 +23,7 @@ export const GET = async(
   _request: NextRequest,
   { params }: { params: Promise<{ id: string}> },
 ) => {
+  
   const { id } = await params
 
   try {

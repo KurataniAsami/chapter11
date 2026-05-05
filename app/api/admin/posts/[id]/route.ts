@@ -1,9 +1,10 @@
 import { prisma } from '../../../../_libs/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 import { PostType } from '@/_types/post'
+import { supabase } from '@/_libs/supabase'
 
 export type Category = {
-  id: string
+  id: number
   name: string
 }
 
@@ -12,9 +13,11 @@ export type PostShowResponse = {
 }
 
 export const GET = async (
-  _request: NextRequest,   
+  request: NextRequest,   
   { params }: { params: Promise<{ id: string }> },  
 ) => {
+  const token = request.headers.get('Authorization') ?? ''
+  const { error } = await supabase.auth.getUser(token)
   const { id } = await params   
   try {
     const post = await prisma.post.findUnique({
@@ -54,16 +57,18 @@ export type UpdatePostRequestBody =  {
   title: string
   content: string
   categories: { id: number }[]
-  thumbnailUrl : string
+  thumbnailImageKey : string
 }
 
 export const PUT = async (
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) => {
+  const token = request.headers.get('Authorization') ?? ''
+  const { error } = await supabase.auth.getUser(token)
   const { id } = await params
 
-  const { title, content, categories, thumbnailUrl }: UpdatePostRequestBody = await request.json()
+  const { title, content, categories, thumbnailImageKey }: UpdatePostRequestBody = await request.json()
 
   try {
     const post = await prisma.post.update({
@@ -73,7 +78,7 @@ export const PUT = async (
       data: {
         title,
         content,
-        thumbnailUrl,
+        thumbnailImageKey,
       },
     })
 
@@ -104,6 +109,8 @@ export const DELETE = async (
   _request: NextRequest,
   { params }: { params: Promise<{ id: string}> },
 ) => {
+  const token = _request.headers.get('Authorization') ?? ''
+  const { error } = await supabase.auth.getUser(token)
   const { id } = await params
 
   try {
