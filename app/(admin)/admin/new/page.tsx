@@ -10,9 +10,7 @@ import { supabase } from "@/_libs/supabase";
 export default function CreatePage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
-  const [thumbnailUrl, setThumbnailUrl] = useState('https://placehold.jp/800x400.png',)
+  // const [thumbnailUrl, setThumbnailUrl] = useState('https://placehold.jp/800x400.png',)
   const [categories, setCategories] = useState<Category[]>([])
   const [error, setError] = useState<string | null>(null)
 
