@@ -1,35 +1,48 @@
 'use client'
-
-import { UpdateCategoryRequestBody } from "@/api/admin/categories/[id]/route"
-import { CreateCategoryRequestBody } from "@/api/admin/categories/route"
+import { useForm } from "react-hook-form"
 
 type CategoryFormProps = {
-  category: string  
-  setCategory: (value: string) => void
-  loading: boolean
-  onSubmit: (e: React.FormEvent) => void
+  // category: string  
+  // setCategory: (value: string) => void
+  // loading: boolean
+  // onSubmit: (e: React.FormEvent) => void
+  onSubmit: (data: CategoryFormData) => void
+  defaultValues?: CategoryFormData
   disabled?: boolean
   mode: 'new' | 'edit'
 }
 
+export type CategoryFormData = {
+  name: string
+}
+
 export const CategoryForm: React.FC<CategoryFormProps> = ({
-  category,
-  setCategory,
+  // category,
+  // setCategory,
   onSubmit,
   disabled,
   mode
 }) => {
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<CategoryFormData>({
+  });
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="flex flex-col">
-      <label htmlFor="name">{category}</label>
+      <label htmlFor="name"></label>
       <input
         type="text"
         className="border border-black"
-        value={category}
-        onChange={(e) => setCategory(e.target.value)}
+        // value={category}
+        // onChange={(e) => setCategory(e.target.value)}
         placeholder="カテゴリー名を入力してください"
         disabled={disabled}
+        {...register("name")}
       />
       </div>
       <button type="submit"

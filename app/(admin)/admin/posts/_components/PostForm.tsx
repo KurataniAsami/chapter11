@@ -5,34 +5,47 @@ import { ChangeEvent, useEffect, useState } from "react"
 import { v4 as uuidv4 } from 'uuid'
 import { supabase } from '@/_libs/supabase'
 import Image from "next/image"
+import { useForm } from "react-hook-form"
 
 type CategoryProps = {
-  title: string
-  setTitle: (title: string) => void
-  content: string
-  setContent: (content: string) => void
-  thumbnailUrl: string
-  setThumbnailUrl: (thumbnailUrl: string) => void
-  categories: Category[]  // 選択されたカテゴリー一覧
-  setCategories: (categories: Category[]) => void
-  onSubmit: (e: React.FormEvent) => void
+  // title: string
+  // setTitle: (title: string) => void
+  // content: string
+  // setContent: (content: string) => void
+  // thumbnailUrl: string
+  // setThumbnailUrl: (thumbnailUrl: string) => void
+  // categories: Category[]  // 選択されたカテゴリー一覧
+  // setCategories: (categories: Category[]) => void
+  initialData?: PostFormData
+  onSubmit: (data: PostFormData) => void
   disabled?: boolean
   mode: 'new' | 'edit'
 }
 
+export type PostFormData = {
+  title: string,
+  thumbnailUrl: string  // registerにないが送信するから必要
+  content: string
+}
+
 export const PostForm: React.FC<CategoryProps> = ({
-  title,
-  setTitle,
-  content,
-  setContent,
-  thumbnailUrl,
-  setThumbnailUrl,
-  categories,
-  setCategories,
+  // title,
+  // setTitle,
+  // content,
+  // setContent,
+  // thumbnailUrl,
+  // setThumbnailUrl,
   onSubmit,
   disabled,
   mode,
 }) => {
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<PostFormData>({
+  });
 
   // 画像アップロード処理
   const [thumbnailImageKey, setThumbnailImageKey] = useState('')
@@ -76,32 +89,30 @@ export const PostForm: React.FC<CategoryProps> = ({
       .from('post_thumbnail')
       .getPublicUrl(thumbnailImageKey)
 
-      setThumbnailUrl(publicUrl)
+      setThumbnailImageUrl(publicUrl)
     } 
 
     fetcher()
   },[thumbnailImageKey])
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
 
       <div>
         <label>タイトル</label>
         <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
           className="w-full border p-2"
           disabled={disabled}
+          {...register("title")}
         />
       </div>
 
       <div>
         <label>内容</label>
         <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
           className="w-full border p-2 h-40"
           disabled={disabled}
+          {...register("content")}
         />
       </div>
 
@@ -112,14 +123,18 @@ export const PostForm: React.FC<CategoryProps> = ({
         >
           サムネイルURL
         </label>
-        <input type="file" id="thumbnailImageKey" onChange={handleImageChange} accept="image/*" />
+        <input
+          type="file"
+          id="thumbnailImageKey"
+          // onChange={handleImageChange}
+            accept="image/*"
+            {...register("thumbnailUrl")}
+        />
       </div>
 
       <div>
         <label>画像</label>
         <input
-          value={thumbnailUrl}
-          onChange={(e) => setThumbnailUrl(e.target.value)}
           className="w-full border p-2"
           disabled={disabled}
         />

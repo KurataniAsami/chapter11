@@ -9,6 +9,9 @@ import { CategoryForm } from '../../_components/CategoryForm'
 // useSupabaseSessionにSupabaseを使う処理をまとめたためimport不要
 import { useSupabaseSession } from "@/_hooks/useSupabaseSession"
 import useSWR from "swr"
+import { useFetch } from "@/_hooks/useFetch"
+import { CategoryFormData } from "../../_components/CategoryForm"
+
 
 const fetcher = async ([url, token]: [string, string]
 ):Promise<UpdateCategoryRequestBody> => {
@@ -24,23 +27,20 @@ const fetcher = async ([url, token]: [string, string]
 export default function EditCategoryPage() {
   const { id } = useParams<{ id : string}>()
   const router = useRouter()
-  const [category, setCategory] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   const { token } = useSupabaseSession()
 
-  const { data, error: swrError, isLoading} = useSWR<UpdateCategoryRequestBody>(token ? [`/api/admin/categories/${id}`, token]: null,
+  const { data, error: swrError, isLoading } = useSWR<UpdateCategoryRequestBody>(token ? [`/api/admin/categories/${id}`, token]: null,
     fetcher
   )
 
-
-
+  
 // 更新処理
-const handleSubmit = async (e: { preventDefault: () => void }) => {
-  e.preventDefault()
+const onSubmit = async (data: CategoryFormData) => {
 
   const body: UpdateCategoryRequestBody = {
-    name: category,
+    name: data.name,
   }
 
   try {
@@ -67,7 +67,7 @@ const handleDelete = async () => {
   }
 }
 
-  if(isLoading || !data) return <div>Loading...</div>
+  // if(isLoading || !data) return <div>Loading...</div>
   if(swrError) return <p>カテゴリーの取得に失敗しました</p>
 
   return (
@@ -76,10 +76,11 @@ const handleDelete = async () => {
 
       <div className="flex">
         <CategoryForm
-          category={category}
-          setCategory={setCategory}
-          loading={isLoading}
-          onSubmit={handleSubmit}
+          // category={category}
+          // setCategory={setCategory}
+          // loading={isLoading}
+          // onSubmit={handleSubmit}
+          onSubmit={onSubmit}
           mode="edit"
         />
         <Link

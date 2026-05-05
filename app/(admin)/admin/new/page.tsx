@@ -3,7 +3,7 @@
 import { useState} from "react";
 import { useRouter } from 'next/navigation'
 import { CreatePostRequestBody } from "@/api/admin/posts/route";
-import { PostForm } from '../posts/_components/PostForm'
+import { PostForm, PostFormData } from '../posts/_components/PostForm'
 import { Category } from "@/api/admin/posts/[id]/route"
 import { supabase } from "@/_libs/supabase";
 
@@ -17,15 +17,14 @@ export default function CreatePage() {
   const [error, setError] = useState<string | null>(null)
 
   // 作成処理
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
-    e.preventDefault()
+  const onSubmit = async (data: PostFormData) => {
 
     setLoading(false)
 
     const body: CreatePostRequestBody = {
-      title,
-      content,
-      thumbnailImageKey: thumbnailUrl,
+      title: data.title,
+      content: data.content,
+      thumbnailImageKey: data.thumbnailUrl,
       categories,
     }
 
@@ -54,15 +53,15 @@ export default function CreatePage() {
       <h1 className="text-2xl font-bold mb-4">新規記事投稿</h1>
       
       <PostForm
-        title={title}
-        setTitle={setTitle}
-        content={content}
-        setContent={setContent}
-        thumbnailUrl={thumbnailUrl}
-        setThumbnailUrl={setThumbnailUrl}
-        categories={categories}
-        setCategories={setCategories}
-        onSubmit={handleSubmit}
+        // title={title}
+        // setTitle={setTitle}
+        // content={content}
+        // setContent={setContent}
+        // thumbnailUrl={thumbnailUrl}
+        // setThumbnailUrl={setThumbnailUrl}
+        // categories={categories}
+        // setCategories={setCategories}
+        onSubmit={onSubmit}
         disabled={loading}
         mode="new"
       />

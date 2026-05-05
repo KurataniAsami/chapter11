@@ -15,7 +15,7 @@ export default function DeletePostPage() {
       const res = await fetch(`/api/admin/categories/${id}`, {
         method: 'DELETE',
         headers: {
-          Authorization: `Bearer &{token}`
+          Authorization: `Bearer ${token}`
         }
       })
       const data = await res.json()

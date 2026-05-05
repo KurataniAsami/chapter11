@@ -2,34 +2,34 @@
 'use client'
 import Link from 'next/link';
 import { PostsIndexResponse } from '@/api/posts/route'
-import { useSupabaseSession } from '@/_hooks/useSupabaseSession';
-import useSWR from 'swr'
+// import { useSupabaseSession } from '@/_hooks/useSupabaseSession';
+// import useSWR from 'swr'
+import { fetcher } from '@/_libs/fetcher';  // useFetchを介して使われているのでここでは未使用
+import { useFetch } from '@/_hooks/useFetch';
 
-const fetcher = async ([url, token]: [string, string]
-):Promise<PostsIndexResponse> => {
-  const res = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  return res.json()
-} 
+// const fetcher = async ([url, token]: [string, string]
+// ):Promise<PostsIndexResponse> => {
+//   const res = await fetch(url, {
+//     headers: {
+//       'Content-Type': 'application/json',
+//       Authorization: `Bearer ${token}`,
+//     },
+//   })
+//   return res.json()
+// } 
 
 export default function Home() {
-  const { token } = useSupabaseSession()
+  // const { token } = useSupabaseSession()
 
   // SWR
-  const { data, error, isLoading } = useSWR<PostsIndexResponse>(token ? [`/api/admin/posts`, token]: null,
-    fetcher
-  )
+  const { data, error, isLoading } = useFetch<PostsIndexResponse>(`/api/admin/posts`)
+  console.log(data)
   
   if (isLoading) return <div>Loading...</div>
   if(error) return <p>記事の取得に失敗しました</p>
   if(!data || !data.posts) {
     return <p>記事が見つかりません</p>
   }
-  console.log(data)
   
   return (
     <div>

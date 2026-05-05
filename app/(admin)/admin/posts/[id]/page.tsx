@@ -5,28 +5,11 @@ import Image from 'next/image'
 // import { PostType } from '@/_types/post'  // バックエンドの型を使用しているので未使用
 import { PostShowResponse } from '../../../../api/admin/posts/[id]/route';
 import Link from 'next/link';
-import { useSupabaseSession } from '@/_hooks/useSupabaseSession';
-import useSWR from 'swr';
-
-const fetcher = async ([url, token]: [string, string]
-):Promise<PostShowResponse> => {
-  const res = await fetch(url, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  })
-  return res.json()
-}
+import { useFetch } from '@/_hooks/useFetch';
 
 const PostDetail = () => {
   const { id } = useParams<{ id: string }>();
-
-  const { token } = useSupabaseSession()
-
-  const { data, error, isLoading } = useSWR<PostShowResponse>(token ? [`/api/admin/posts/${id}`, token]: null,
-    fetcher
-  )
+  const { data, error, isLoading } = useFetch<PostShowResponse>(`/api/admin/posts/${id}`)
 
   if (isLoading || !data) return <p>loading</p>
   if (error)  return <p>記事の取得に失敗しました</p>
